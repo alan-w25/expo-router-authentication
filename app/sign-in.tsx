@@ -85,7 +85,7 @@ const SignIn: React.FC = () => {
             handlePress = {handleLogin}
           />
 
-          <Link className="mt-4" href="/">Forgot Password?</Link>
+          <Link className="mt-4" href="/forgot-password">Forgot Password?</Link>
         </View>
 
         <View className="mt-8 ml-4">

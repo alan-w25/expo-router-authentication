@@ -26,7 +26,7 @@ const home: React.FC = () => {
       <ScrollView className="h-full bg-white">
         <CustomButton 
           title="Sign Out"
-          handlePress = {signOut}
+          handlePress = {logout}
         />
       </ScrollView>
     </SafeAreaView>

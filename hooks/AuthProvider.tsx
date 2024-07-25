@@ -6,6 +6,7 @@ interface AuthContextType {
     signIn: (method: string, credentials: any) => void; 
     signOut: () => Promise<void>;
     signUp: (email: string, password: string) => Promise<void>; 
+    forgotPassword: (email:string) => Promise<void>;
     session?: FirebaseAuthTypes.User | null;
     isLoading: boolean;
 }
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType>({
     signIn: async () => {}, 
     signOut: async () => {},
     signUp: async () => {},
+    forgotPassword: async () => {},
     session: null,
     isLoading: false,
 })
@@ -69,12 +71,21 @@ export function SessionProvider({children}:SessionProviderProps) {
         }
     }
 
+    const forgotPassword = async (email: string) => {
+        try{
+            await auth().sendPasswordResetEmail(email); 
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     return (
         <AuthContext.Provider 
             value ={{
                 signIn,
                 signOut,
                 signUp,
+                forgotPassword,
                 session: session ? JSON.parse(session):null, 
                 isLoading
             }}>
