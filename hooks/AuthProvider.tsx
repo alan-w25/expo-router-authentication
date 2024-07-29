@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState} from 'react';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import {useStorageState} from './useStorageState';
 
@@ -7,6 +7,8 @@ interface AuthContextType {
     signOut: () => Promise<void>;
     signUp: (email: string, password: string) => Promise<void>; 
     forgotPassword: (email:string) => Promise<void>;
+    resendVerificationEmail: () => Promise<void>;
+    currentUser?: FirebaseAuthTypes.User | null;
     session?: FirebaseAuthTypes.User | null;
     isLoading: boolean;
 }
@@ -16,6 +18,8 @@ const AuthContext = createContext<AuthContextType>({
     signOut: async () => {},
     signUp: async () => {},
     forgotPassword: async () => {},
+    resendVerificationEmail: async () => {},
+    currentUser: null,
     session: null,
     isLoading: false,
 })
@@ -29,10 +33,12 @@ interface SessionProviderProps {
 }
 
 export function SessionProvider({children}:SessionProviderProps) {
+    const [currentUser, setCurrentUser] = useState<FirebaseAuthTypes.User | null>(null);
     const[[isLoading, session], setSession] = useStorageState("session"); 
 
     useEffect(() => {
         const subscriber = auth().onAuthStateChanged((user) =>{
+            setCurrentUser(user);
             setSession(user ? JSON.stringify(user) : null);
         });
         return subscriber;
@@ -58,6 +64,7 @@ export function SessionProvider({children}:SessionProviderProps) {
         try{
             await auth().signOut();
             setSession(null);
+            setCurrentUser(null);
         } catch(error){
             console.log(error);
         }
@@ -65,11 +72,32 @@ export function SessionProvider({children}:SessionProviderProps) {
 
     const signUp = async (email: string, password: string) => {
         try{
-            await auth().createUserWithEmailAndPassword(email, password);
+            const userCredential = await auth().createUserWithEmailAndPassword(email, password)
+            const user = userCredential.user;
+
+            if (user) {
+                await user.sendEmailVerification();
+                console.log('Verification email sent. Please check your inbox.');
+            }
         } catch (error){
             console.log(error); 
         }
     }
+
+    const resendVerificationEmail = async () => {
+        try {
+            const user = auth().currentUser;
+            if (user) {
+                await user.sendEmailVerification();
+                console.log('Verification email resent.');
+            } else {
+                console.log('No user is signed in.');
+            }
+        } catch (error: any) {
+            console.error('Error resending verification email:', error.message);
+            throw error; // This will allow the error to be caught in the calling function
+        }
+    };
 
     const forgotPassword = async (email: string) => {
         try{
@@ -86,6 +114,8 @@ export function SessionProvider({children}:SessionProviderProps) {
                 signOut,
                 signUp,
                 forgotPassword,
+                resendVerificationEmail,
+                currentUser,
                 session: session ? JSON.parse(session):null, 
                 isLoading
             }}>

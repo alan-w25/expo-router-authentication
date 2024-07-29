@@ -37,8 +37,8 @@ const SignUp = () => {
 
     try{
       await signUp(form.email, form.password);
-      Alert.alert('Success', 'Account created successfully');
-      router.push('/sign-in');
+      Alert.alert('Success', 'We sent you an email to verify your account');
+      router.push('/email-verification');
     } catch (error: any){
       Alert.alert('Error', error.message)
       console.log(error.message)

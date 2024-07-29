@@ -21,7 +21,7 @@ const SignIn: React.FC = () => {
     });
 
 
-  const {signIn} = useAuth();
+  const {signIn, signOut} = useAuth();
 
   const [form, setForm] = useState<FormState>({
     email: '', 
@@ -51,6 +51,16 @@ const SignIn: React.FC = () => {
 
     try{
       await signIn('email', {email: form.email, password: form.password})
+
+
+      const user = auth().currentUser; 
+
+      if (user && !user.emailVerified){
+        await signOut();
+        Alert.alert('Error', "Please verify your email before signing in")
+        return;
+      }
+
       setForm({email: '', password: ''})
       Alert.alert('Success', 'User signed in successfully');
       router.push('/');

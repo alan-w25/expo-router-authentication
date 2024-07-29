@@ -31,7 +31,7 @@ const FormInput: React.FC<FormInputProps> = ({title, value, placeholder, handleC
                 {...props}
             />
 
-            {title === 'Password' && (
+            {(title === 'Password' || placeholder === "confirm password") && (
                 <TouchableOpacity
                     onPress = { () => setShowPassword(!showPassword)}
                 >
